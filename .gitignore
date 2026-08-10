@@ -1,0 +1,6 @@
+HIBABLZERO/bin
+HIBABLZERO/build
+
+*.o
+*.img
+*.bin
