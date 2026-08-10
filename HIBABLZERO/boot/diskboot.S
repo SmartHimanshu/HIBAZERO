@@ -6,10 +6,14 @@
 
 .globl _start
 _start:
-    
+    xorw %ax, %ax
+    movw %ax, %ds
+    movw %ax, %es
     
     movw $welcome_msg, %si
     call print
+
+
 
 die:
     jmp die
@@ -40,5 +44,15 @@ print:
     ret
 
 welcome_msg: .asciz "Disk boot has been successfully loaded!\n"
+
+//This is HB0 core. (HB0 is for HIBABOOTLOADERVZERO) addr and size.
+
+core: 
+    core_size: 
+        .word 64
+    core_lba_low:
+        .long 2
+    core_lba_high:
+        .long 0
 
 .org 0x1000

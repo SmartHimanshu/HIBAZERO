@@ -2,13 +2,9 @@
 
 .file "boot.S"
 
-.section .text
-
 .globl _start
 _start:
     //These are generally thrashed by bios so we have to restore them.
-    
-    cld
 
     cli
 
@@ -16,6 +12,7 @@ _start:
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %ss
+    movw %ax, %di
 
     movw $0x7c00, %sp
 
@@ -76,10 +73,8 @@ lba:
 
     movw $dap, %si
 
-    movw diskboot_lba_low, %ax
-    movw %ax, 8(%si)
-    movw diskboot_lba_high, %ax
-    movw %ax, 12(%si)
+    movl diskboot_lba_low, %eax
+    movl %eax, 8(%si)
 
     /* Now that we have filled dap, we can continue onto the main read.*/
 
@@ -105,16 +100,9 @@ lba:
 
     jmp copy
 chs:
-    movb $1, %al
+    movw $0x0801, %ax
     movb %al, addressing_mode
 
-    xorw %ax, %ax
-    movw %ax, %es
-    movw %ax, %di
-    movw %ax, %ds
-    movw %ax, %si
-
-    movb $0x08, %ah
 
     xorb %dh, %dh
     push %dx //Save drive
@@ -140,10 +128,14 @@ chs:
     incb %dh
     movb %dh, (%si) //Head num in first byte
     
+    
+
     xorw %ax, %ax
     movb %cl, %al
     andb $0b00111111, %al //Extract max sector number
+    incb %al
     movb %al, 1(%si) //Max sector in second byte
+
 
     movb %ch, %al //Extract low 8 bits of cylinder
     andb $0b11000000, %cl //Extract high 2 bits of cylinder
@@ -152,16 +144,19 @@ chs:
     incw %ax
     movw %ax, 2(%si) //Max cylinder in third two bytes
 
+
     movl diskboot_lba_low, %eax
-    shll $8, %eax
-    movw diskboot_lba_high, %ax
 
     xorl %ebx, %ebx
     movb 1(%si), %bl //Sectors per track
 
+    xorl %edx, %edx
+
     divl %ebx   //Now edx contains dap % sectors. Which is sector needed for lba.
 
     movb %dl, %cl //Transfer sector into cl to prep for disk read.
+    
+
 
     xorl %edx, %edx
 
@@ -176,17 +171,19 @@ chs:
     and %edx contains head.
     */
 
+    
+
     movb %dl, %ch
     pop %dx
     movb %ch, %dh //Now dh has head needed for next read.
 
     movb %al, %ch //Low 8 bits of cylinder in ch now.
     shrw $2, %ax
-    andb 0b11000000, %al
+    andb $0b11000000, %al
     orb %al, %cl    //Load high 2 bits of cylinder in upper two bits of cl
 
-    movw $0x7000, %ax
-    movw %ax, %es
+    movw $0x7000, %bx
+    movw %bx, %es
     xorw %bx, %bx
 
     /*
@@ -201,8 +198,7 @@ chs:
         ES:BX -> data buffer
     */
 
-    movb $0x02, %ah
-    movb $8, %al
+    movw $0x0208, %ax
     int $0x13
 
     jc faulty_system
@@ -227,23 +223,12 @@ copy:
     rep
     movsw
 
-    xorw %ax, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %di
     movw $lba, %si
 
     //Jump to diskboot.
     ljmp $0, $0x6000
 
 faulty_system:
-    xor %ax, %ax
-    movw %ax, %bx
-    movw %ax, %cx
-    movw %ax, %dx
-    movw %ax, %es
-    movw %ax, %di
-    movw %ax, %ds
     movw $faulty_msg, %si
     call print
     cli
@@ -295,15 +280,16 @@ addressing_mode: .byte 0
 die:
     jmp die
 
-.org 0x1F5
-
-diskboot_lba_high:
-    .long 0
 diskboot_lba_low:
     .long 1
+diskboot_lba_high:
+    .long 0
+
 
 // 0xFF stands for not defined, go with the bios provided disk number.
 diskboot_disk_num:
     .byte 0xFF 
+
+.org 0x1FE
 
 .word 0xAA55
