@@ -1,11 +1,12 @@
 # First and foremost, we compile the boot sector.
 CC := i686-elf-gcc
 LD := i686-elf-ld
-ASFLAGS := -g -ffreestanding -nostdlib -nostdinc -Iinclude
+ASFLAGS := -g -ffreestanding -nostdlib -nostdinc -m32 -Iinclude
 all: build/disk.img
 
 build/boot.bin: boot/boot.S
 	$(CC) $(ASFLAGS) -Tboot/bootlinker.ld -o $@ $<
+	$(CC) $(ASFLAGS) -Tboot/bootlinkerelf.ld -o build/boot.o -c $<
 
 build/diskboot.bin: boot/diskboot.S
 	$(CC) $(ASFLAGS) -Tboot/diskbootlinker.ld -o $@ $<
