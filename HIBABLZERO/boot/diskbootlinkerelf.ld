@@ -1,7 +1,7 @@
-OUTPUT_FORMAT(binary)
+ENTRY(_start)
 SECTIONS
 {
-    . = 0x8000;
+    . = 0x6000;
     .text :
     {
         *(.text)
@@ -21,5 +21,4 @@ SECTIONS
     {
         *(.rodata)
     }
-    
 }

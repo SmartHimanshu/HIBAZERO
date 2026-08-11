@@ -1,23 +1,23 @@
 ENTRY(_start)
 SECTIONS
 {
-    . = 0x7c00;
-    .text:
+    . = 0x8000;
+    .text :
     {
         *(.text)
     }
 
-    .bss:
+    .bss :
     {
         *(.bss)
     }
 
-    .data:
+    .data :
     {
         *(.data)
     }
     
-    .rodata:
+    .rodata :
     {
         *(.rodata)
     }

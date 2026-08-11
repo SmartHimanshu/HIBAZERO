@@ -43,7 +43,6 @@ _start:
 
     movb $0x80, %dl
 1:
-    jmp chs
 
     /*
     Now we are going to query bios in many ways 
@@ -223,7 +222,7 @@ copy:
     rep
     movsw
 
-    movw $lba, %si
+    movw $dap, %si
 
     //Jump to diskboot.
     ljmp $0, $0x6000
