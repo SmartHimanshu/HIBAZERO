@@ -10,10 +10,33 @@ _start:
     movw %ax, %ds
     movw %ax, %es
     
+    pushw %si
+    
     movw $welcome_msg, %si
     call print
+    
+    popw %si
+
+    /*
+    Since diskboot is all about loading core as fast as possible,
+    we will use the maximum sector limit for BIOS read. (127)
+    */
+
+    movb 16(%si), %al
+    testb %al, %al
+    jnz chs
+
+    /* 
+    At this offset, we have defined the kind of mode we have come from.
+    1 for chs and 0 for lba.
+    */
+
+lba:
 
 
+
+
+chs:
 
 die:
     jmp die
@@ -55,4 +78,4 @@ core:
     core_lba_high:
         .long 0
 
-.org 0x1000
+.org 0x400

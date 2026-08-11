@@ -198,7 +198,7 @@ chs:
         ES:BX -> data buffer
     */
 
-    movw $0x0208, %ax
+    movw $0x0202, %ax
     int $0x13
 
     jc faulty_system
@@ -207,7 +207,7 @@ copy:
     /*
     Now that we have loaded the sectors in disk buffer.
     We are now going to copy the 8 sectors for diskboot into addr 0x6000.
-    ds:si = 0x70000 es:di = 0x6000 0x1000 bytes 0x800 words to transfer.
+    ds:si = 0x70000 es:di = 0x6000 0x400 bytes 0x200 words to transfer.
     */
 
 
@@ -218,7 +218,7 @@ copy:
     movw %ax, %es
     movw $0, %di
 
-    movw $0x800, %cx
+    movw $0x200, %cx
 
     rep
     movsw
@@ -271,7 +271,7 @@ third long: max cylinder
 dap:
     dap_size: .byte 0x10
     dap_rsrv: .byte 0
-    dap_sectors: .word 8
+    dap_sectors: .word 2
     dap_transfer_offset: .word 0x0000
     dap_transfer_segment: .word 0x7000
     dap_lba_addr: .quad 0 // Filled at runtime
