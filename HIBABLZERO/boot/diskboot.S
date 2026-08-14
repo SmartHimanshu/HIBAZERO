@@ -37,7 +37,7 @@ _start:
 
     movb 16(%si), %al
     testb %al, %al
-    jnz chs
+    jnz chs_setup
 
     /* 
     At this offset, we have defined the kind of mode we have come from.
@@ -100,24 +100,7 @@ lba:
     
     jc error //Honestly this is majorly for bug catching
 
-    xorl %eax, %eax
-    movw scratch+2, %ax
-    movw %ax, 2(%si)
-    addl %eax, 8(%si) 
-    jnc 2f
-
-
-    addl $1, 12(%si)
-    jmp 2f
-
-1:
-    addl $127, 8(%si)
-    jnc 2f
-
-    addl $1, 12(%si)
-
-2:
-    decw %bx
+    
 
     // Now we transfer 127 sectors 
 
@@ -149,25 +132,141 @@ lba:
     jb jump_to_core // If this is remainder sector read then simply jump to core.
     jne 1f          // If this is the last 127 read then we will load remainder sectors here
 
+    xorl %eax, %eax
+    movw scratch+2, %ax
+    movw %ax, 2(%si)
+    addl $127, 8(%si) 
+    jnc 2f
+
+
+    addl $1, 12(%si)
+    jmp 2f
+
+1:
+    addl $127, 8(%si)
+    jnc 2f
+
+    addl $1, 12(%si)
+
+2:
+    decw %bx
     jmp lba 
 
 chs_setup:
+    /*
+    Since we are here, it just means that we are going for 
+    CHS addressing.
+    */
 
-/*
-Since we are here, it just means that we are going for 
-CHS addressing.
-*/
+    popw %dx
+
+    movw scratch, %ax
+    testw %ax, %ax
+    jnz 1f
+
+    movw scratch+2, %ax
+
+    jmp 2f
+1:
+    movw $127, %ax
+
+2:
+    //The count of the times to do 127 read stored in scratch.
+
+
+chs:
+    movb %dl, current_drive
+    pushw %ax
+    movl core_lba_low, %eax
+    movl core_lba_high, %edx
+
+    call lba_to_chs
+
+    popw %ax
+    movb current_drive, %dl
+    
+
+    movw $0x7000, %bx
+    movw %bx, %es
+    xorw %bx, %bx
+
+    movb $0x02, %ah
+
+    int $0x13
+
+    jc error
+
+    cld
+
+    push %ax
+    push %es
+    push %ds
+    push %si
+
+    movw $32512, %cx
+    xorw %ax, %ax
+    movw %ax, %di
+    movw %ax, %si
+    movw $0x7000, %ax
+    movw %ax, %ds
+    movw core_load_addr_seg, %ax //Load core_load_addr
+    movw %ax, %es
+
+    rep
+    movsw
+
+    pop %si
+    pop %ds
+    pop %es
+    pop %ax
+
+    addw $4064, core_load_addr_seg
+
+    movw scratch, %bx
+    cmpb $1, %bl
+    jb jump_to_core
+    jne 1f
+
+    xorl %eax, %eax
+    movw scratch+2, %ax
+1:
+    addl $127, core_lba_low
+    subw $1, scratch
+    jmp lba 
 
 
 
 /* 
-Stores chs address at scratch+4 till scratch+8
-Takes lba addr at register eax and then translates it onto scratch for chs address.
+Stores chs address such that its easy to just call bios interrupt.
+Takes lba addr at register edx:eax and then translates it onto registers for chs address.
 and %si should point to disk dimensions.
 */
 lba_to_chs:
-    
+    pushw %dx
+    xorl %ecx, %ecx
+    movb 1(%si), %cl //Take sectors per track in ecx.
 
+    divl %ecx //Now dap % sectors in edx and dap / sectors in eax
+
+    incl %edx
+    movb %dl, %cl //Store sector start in scratch+4
+
+    xorl %edx, %edx
+    movl %edx, %ebx
+    movb (%si), %bl //Take head num
+
+    divl %ebx //Now cylinder in eax and head in edx
+
+    movb %dl, %ch
+    popw %dx
+    movb %ch, %dh //Now dh has head.
+
+    movb %al, %ch
+    shrw $2, %ax
+    andb $0b11000000, %al
+    orb %al, %cl // Now cylinder loaded.
+
+    ret
 
 jump_to_core:
     ljmp $0, $0x8000
@@ -207,8 +306,10 @@ print:
 2:
     ret
 
+
 welcome_msg: .asciz "Disk boot has been successfully loaded!\n"
 error_msg: .asciz "A serious error has occured during disk read of core.\n"
+
 
 scratch:
     .quad 0
@@ -217,13 +318,16 @@ scratch:
 core_load_addr_seg:
     .word 0x800
 
+current_drive:
+    .byte 0
+
 //This is HB0 core. (HB0 is for HIBABOOTLOADERVZERO) addr and size.
 
 core: 
     core_size: 
         .word 256
     core_lba_low:
-        .long 2
+        .long 11
     core_lba_high:
         .long 0
 

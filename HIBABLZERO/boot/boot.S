@@ -67,7 +67,6 @@ _start:
 
     cmp $0xaa55, %bx
     jne chs 
-
 lba:
 
     movw $dap, %si
@@ -197,7 +196,7 @@ chs:
         ES:BX -> data buffer
     */
 
-    movw $0x0202, %ax
+    movw $0x020A, %ax
     int $0x13
 
     jc faulty_system
@@ -217,7 +216,7 @@ copy:
     movw %ax, %es
     movw $0, %di
 
-    movw $0x200, %cx
+    movw $0xE00, %cx
 
     rep
     movsw

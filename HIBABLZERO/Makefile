@@ -26,4 +26,4 @@ build/disk.img: build/boot.bin build/diskboot.bin build/core.bin
 	truncate -s 32M $@
 	dd if=build/boot.bin of=build/disk.img bs=512 count=1 seek=0 conv=notrunc
 	dd if=build/diskboot.bin of=build/disk.img bs=512 count=10 seek=1 conv=notrunc
-	dd if=build/core.bin of=build/disk.img bs=512 count=256 seek=2 conv=notrunc
+	dd if=build/core.bin of=build/disk.img bs=512 count=256 seek=11 conv=notrunc
