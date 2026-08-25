@@ -1,25 +1,30 @@
+ENTRY(_start)
 OUTPUT_FORMAT(binary)
 SECTIONS
 {
-    . = 0x8000;
+    . = 0x8000;    
+    .startup :
+    {
+        *(.startup*)
+    }
     .text :
     {
-        *(.text)
+        *(.text*)
     }
 
     .bss :
     {
-        *(.bss)
+        *(.bss*)
     }
 
     .data :
     {
-        *(.data)
+        *(.data*)
     }
 
     .rodata :
     {
-        *(.rodata)
+        *(.rodata*)
     }
     
 }

@@ -2,23 +2,28 @@ ENTRY(_start)
 SECTIONS
 {
     . = 0x8000;
+    .startup :
+    {
+        *(.startup*)
+    }
+
     .text :
     {
-        *(.text)
+        *(.text*)
     }
 
     .bss :
     {
-        *(.bss)
+        *(.bss*)
     }
 
     .data :
     {
-        *(.data)
+        *(.data*)
     }
     
     .rodata :
     {
-        *(.rodata)
+        *(.rodata*)
     }
 }

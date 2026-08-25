@@ -114,10 +114,11 @@ lba:
     xorw %ax, %ax
     movw %ax, %di
     movw %ax, %si
-    movw $0x7000, %ax
-    movw %ax, %ds
     movw core_load_addr_seg, %ax //Load core_load_addr
     movw %ax, %es
+    movw $0x7000, %ax
+    movw %ax, %ds
+    
 
     rep
     movsw
@@ -207,10 +208,10 @@ chs:
     xorw %ax, %ax
     movw %ax, %di
     movw %ax, %si
-    movw $0x7000, %ax
-    movw %ax, %ds
     movw core_load_addr_seg, %ax //Load core_load_addr
     movw %ax, %es
+    movw $0x7000, %ax
+    movw %ax, %ds
 
     rep
     movsw

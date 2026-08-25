@@ -1,26 +1,30 @@
 # First and foremost, we compile the boot sector.
 CC := i686-elf-gcc
 LD := i686-elf-ld
-ASFLAGS := -g -ffreestanding -nostdlib -nostdinc -m32 -Wall -Iinclude
-
-OBJS := bin/startup_boot.S.o
+STARTUPASFLAGS := -g -Iinclude
+ASFLAGS := $(STARTUPASFLAGS) -ffreestanding -nostdlib -nostdinc -Wall -Wextra -O0
+CFLAGS := $(ASFLAGS)
+OBJS := bin/startup_boot.S.o bin/init.c.o
 
 all: build/disk.img
 
 build/core.bin: $(OBJS)
-	$(CC) $(ASFLAGS) -Tlinker.ld -o $@ $<
-	$(CC) $(ASFLAGS) -Tlinkerelf.ld -o build/coreelf.o $<
+	$(CC) $(ASFLAGS) -Tlinker.ld -o $@ $(OBJS)
+	$(CC) $(ASFLAGS) -Tlinkerelf.ld -o build/coreelf.o $(OBJS)
 
 build/boot.bin: boot/boot.S
-	$(CC) $(ASFLAGS) -Tboot/bootlinker.ld -o $@ $<
-	$(CC) $(ASFLAGS) -Tboot/bootlinkerelf.ld -o build/boot.o -c $<
+	$(CC) $(ASFLAGS) -m32 -Tboot/bootlinker.ld -o $@ $<
+	$(CC) $(ASFLAGS) -m32 -Tboot/bootlinkerelf.ld -o build/boot.o -c $<
 
 build/diskboot.bin: boot/diskboot.S
-	$(CC) $(ASFLAGS) -Tboot/diskbootlinker.ld -o $@ $<
-	$(CC) $(ASFLAGS) -Tboot/bootlinkerelf.ld -o build/diskboot.o -c $<
+	$(CC) $(ASFLAGS) -m32 -Tboot/diskbootlinker.ld -o $@ $<
+	$(CC) $(ASFLAGS) -m32 -Tboot/bootlinkerelf.ld -o build/diskboot.o -c $<
 
 bin/startup_boot.S.o: startup/startup_boot.S
 	$(CC) $(ASFLAGS) -o $@ -c $<
+
+bin/init.c.o: startup/init.c
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 build/disk.img: build/boot.bin build/diskboot.bin build/core.bin
 	truncate -s 32M $@
