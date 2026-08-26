@@ -2,6 +2,14 @@
 
 Thank you for your interest in contributing to this project! Since this project involves low level C code, If you are new to OSdev, It is recommended to go through this guide before submitting issues or pull requests.
 
+# Table of contents:
+
+- [Setting up Toolchain](https://github.com/SmartHimanshu/HIBAZERO?tab=contributing-ov-file#setting-up-toolchain--development-environment)
+
+- [Coding Standards](https://github.com/SmartHimanshu/HIBAZERO?tab=contributing-ov-file#coding-standards--constraints)
+
+- [Commit Messages Guidelines](https://github.com/SmartHimanshu/HIBAZERO?tab=contributing-ov-file#coding-standards--constraints)
+
 ## Setting up Toolchain & Development Environment
 
 In order to build & test this project, you must use the i686- cross compiler toolchain:
@@ -29,6 +37,8 @@ Please refer to these sources for Cross-Compiler setup:
 2. __Anti Bloat__ => Since the final compiled binary of the bootloader must be under 1MB, it is advised not to make useless extra drivers for what range has already been decided.
 
 3. __No Code Hinderence__ => This is more of an advised rule, your code or module you code like a driver for example, should not disrupt the main flow of the other code interacting with it.
+
+4. __Use of AI__ => It is advised not to use AI for this build. We would not recommend it because, AI generates a lot of bad code. However, you are free to use AI for contributing etc. Since OSdev is such a difficult and complex coding, we generally don't advise it. 
 
 ## How to contribute
 

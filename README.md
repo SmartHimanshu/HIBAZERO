@@ -1,16 +1,25 @@
-# HIBA systems projects vzero
----
+# HIBAZERO Systems Project
 
-This is my, or **HIBA's (Himanshu Bakshi's)** system projects that are going to span from creating a bootloader from scratch, all the way till hosting a web server, dns server and actually running a toy browser. Inside the span of 5 years.
+Welcome to HIBAZERO systems project. HIBAZERO is a collection of individual systems projects designed to work together.
 
-This is the **back to zero version** as I will have to bulid UP from the basics down.
+# A note from the author
 
-Please note that if I ever get time even when I have a job, I might actually upgrade the browser to a more modern one.
+HIBAZERO is a highly new project and is made by an 18 year old. Therefore, its bound to have all sorts of bugs, engineering mistakes, etc. 
 
-Now obviously, this is going to be cutomized and fully built to run on modern real life machines.
+Please be informed that debugging might not be very easy. OSdev is a highly complex filled with bugs.
 
-One of the things about this is that there is absolutely **no use of AI in this repo, and all the contributors are required not to use any kind of AI in it.**
+Since this is a learning expirement too, no contribution is too small. Whether its adding documentation or even fixing minor bugs, you are welcome to help.
 
-**In the research, or even inspiration including the code is going to be human crafted and made, not a single line of AI anywhere.**
+# The plan
 
-**Also the sole goal of this repo is to invent everything from 0 all the way till 1**
+In the future, its going to consist of 5 things (More could be added later):
+
+- [x] HIBABLZERO : A 32 bit bootloader
+- [ ] HIBAKERNZERO : A 64 bit bootloader
+- [ ] HIBABZ : A browser
+- [ ] HIBADNSSERV : A dns server
+- [ ] HIBAHTTPSERV : An http serve
+
+Please note documentation and details regarding the projects are in their respective folders matching their names.
+
+For contributing, please look at CONTRIBUTING.md for more details.
