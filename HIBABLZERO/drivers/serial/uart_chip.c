@@ -7,9 +7,11 @@ it under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.
 */
 
-#include "uart.h"
+#include <drivers/serial.h>
 #include <hb0/io/serial_io.h>
 #include <hb0/err.h>
+
+#include "uart.h"
 
 #define ARBRITRARY_VALUE 0x81
 
@@ -69,8 +71,8 @@ int serial_get_chip(struct serial_port* port, struct serial_chip** detected_chip
 
     if(IIR&(1<<7))
     { 
-        // No FIFO support for now.
-        return -FAILED;
+        *detected_chip_version = &uart_standard_chips_config[U8520];
+        return SUCCESS;
     }
     else
     {
@@ -113,12 +115,15 @@ u16 serial_get_dl(struct serial_port* port, u16 value)
     return ((u16)DLH<<8) | DLL;
 }
 
-int serial_interface_init(struct serial_interface* interface, u16 divisor)
+int serial_interface_init(struct serial_interface* interface, u16 divisor, u16 port)
 {
+    interface->port->iobase = port;
     int status = serial_get_chip(interface->port, &interface->chip);
 
+    if(status) return status;
+
     // Set baud rate.
-    serial_out(interface->port, 3, 0x80);
+    serial_out(interface->port->iobase, 3, 0x80);
     serial_set_dl(interface->port, divisor);
 
     /* 
@@ -126,22 +131,108 @@ int serial_interface_init(struct serial_interface* interface, u16 divisor)
     doesn't need advanced features right now. 
     */
 
-    serial_out(interface->port, 3, 0x3);
-    
+    serial_out(interface->port->iobase, 3, 0x3);
+
+    if(interface->chip->fifo_size==1)
+    {
+        interface->can_read = can_serial_recv;
+        interface->can_write = can_serial_send;
+        interface->backspace = serial_backspace8250;
+        interface->newline = serial_newline8250;
+        interface->putc = serial_send8250;
+        interface->readc = serial_recv8250;
+    }
+
     return status;
 }
 
 int serial_chip_test(struct serial_port* port)
 {
-    serial_out(port, 4, 1<<4);
-    serial_out(port, 0, ARBRITRARY_VALUE);
-    u8 val = serial_in(port, 0);
+    serial_out(port->iobase, 4, 1<<4);
+    serial_out(port->iobase, 0, ARBRITRARY_VALUE);
+    u8 val = serial_in(port->iobase, 0);
     if(val==ARBRITRARY_VALUE)
     {
+        serial_out(port->iobase, 4, 0);
         return SUCCESS;
     }
     else
     {
         return -ERRFAULTY;
     }
+}
+
+bool can_serial_recv(struct serial_port* port)
+{
+    return (serial_in(port->iobase, 5) & 1);
+}
+
+int serial_recv8250(struct serial_interface* chip, u8* data)
+{
+    if(can_serial_recv(chip->port))
+    {
+        *data = serial_in(chip->port->iobase, 0);
+        return SUCCESS;
+    }
+    else
+    {
+        return -FAILED;
+    }
+}
+
+bool can_serial_send(struct serial_port* port)
+{
+    return (serial_in(port->iobase, 5) & (1<<5));
+}
+
+int serial_send8250(struct serial_interface* chip, u8 data)
+{
+    if(can_serial_send(chip->port))
+    {
+        serial_out(chip->port->iobase, 0, data);
+        return SUCCESS;
+    }
+    else
+    {
+        return -FAILED;
+    }
+}
+
+int serial_newline8250(struct serial_interface* chip)
+{
+    int status = serial_send8250(chip, '\r');
+    if(status)
+    {
+        return status;
+    }
+    else
+    {
+        while(serial_send8250(chip, '\n'))
+        {
+            ;
+        }
+    }
+    return SUCCESS;
+}
+
+int serial_backspace8250(struct serial_interface* chip)
+{
+    int status = serial_send8250(chip, 0x08);
+    if(status)
+    {
+        return status;
+    }
+    else
+    {
+        while(serial_send8250(chip, 0x20))
+        {
+            ;
+        }
+        while(serial_send8250(chip, 0x08))
+        {
+            ;
+        }
+    }
+
+    return SUCCESS;
 }

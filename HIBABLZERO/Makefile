@@ -2,9 +2,9 @@
 CC := i686-elf-gcc
 LD := i686-elf-ld
 STARTUPASFLAGS := -g -Iinclude
-ASFLAGS := $(STARTUPASFLAGS) -ffreestanding -nostdlib -nostdinc -Wall -Wextra -O0
+ASFLAGS := $(STARTUPASFLAGS) -ffreestanding -nostdlib -nostdinc -Wall -Wextra
 CFLAGS := $(ASFLAGS)
-OBJS := bin/startup_boot.S.o bin/init.c.o
+OBJS := bin/startup_boot.S.o bin/init.c.o bin/serial_uart_chip.c.o
 
 all: build/disk.img
 
@@ -24,6 +24,9 @@ bin/startup_boot.S.o: startup/startup_boot.S
 	$(CC) $(ASFLAGS) -o $@ -c $<
 
 bin/init.c.o: startup/init.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+bin/serial_uart_chip.c.o: drivers/serial/uart_chip.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 build/disk.img: build/boot.bin build/diskboot.bin build/core.bin

@@ -7,27 +7,12 @@ it under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.
 */
 
-#ifndef DRIVER_SERIAL_INTERNAL_H
-#define DRIVER_SERIAL_INTERNAL_H
-
-#define PORT_COM1 0x3F8 
-#define PORT_COM2 0x2F8 
-#define PORT_COM3 0x3E8 
-#define PORT_COM4 0x2E8 
-#define PORT_COM5 0x5F8
-#define PORT_COM6 0x4F8
-#define PORT_COM7 0x5E8
-#define PORT_COM8 0x4E8
+#ifndef DRIVER_INTERNAL_SERIAL_INTERNAL_H
+#define DRIVER_INTERNAL_SERIAL_INTERNAL_H
 
 #include <hb0/types.h>
 #include <hb0/bool.h>
-
-struct serial_chip
-{
-    const char* chip_name;
-    bool fifo_supported;
-    u8 fifo_size;
-};
+#include <drivers/serial.h>
 
 enum chip_type
 {
@@ -39,26 +24,16 @@ enum chip_type
     U16750
 };
 
-struct serial_port
-{
-    u32 iobase;
-};
 
-struct serial_interface
-{
-    struct serial_port* port;
-    struct serial_chip* chip;
-    void (*putc)(struct serial_interface console, char c);
-    void (*backspace)(struct serial_interface console);
-    void (*newline)(struct serial_interface console);
-    char (*readc)(struct serial_interface console);
-    bool (*can_read)(void);
-    bool (*can_write)(void);
-};
-
-u8 get_lsr(struct serial_port *port);
-void set_lsr(struct serial_port *port, u8 lsr);
-u8 get_dl(struct serial_port *port);
-void set_dl(struct serial_port *port, u8 dl);
+int serial_backspace8250(struct serial_interface* chip);
+int serial_get_chip(struct serial_port* port, struct serial_chip** detected_chip_version);
+void serial_set_dl(struct serial_port* port, u16 value);
+u16 serial_get_dl(struct serial_port* port, u16 value);
+int serial_chip_test(struct serial_port* port);
+bool can_serial_recv(struct serial_port* port);
+int serial_recv8250(struct serial_interface* chip, u8* data);
+bool can_serial_send(struct serial_port* port);
+int serial_send8250(struct serial_interface* chip, u8 data);
+int serial_newline8250(struct serial_interface* chip);
 
 #endif

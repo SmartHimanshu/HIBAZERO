@@ -19,7 +19,43 @@ You wanna go fast? let's go fast!
 I am gonna use regparm to pass the struct in edx and int no. in al for speed.
 */
 bios_interrupt:
-    // We will have to be careful and mindful about the way by which we will fill registers.
-    // First off, we know that we will have to load ds es eax and flags with utmost
-    // precision and care. 
+    /*
+    We will have to be careful and mindful about the way by which we will fill registers.
+    First off, we know that we will have to load ds es edx and flags with utmost
+    precision and care.
+    */
+
+/* movw imm16, %ax */
+    .byte 0xb8
+DS_filler:
+    .word 0x00
+    movw %ax, %ds
+
+    .byte 0xb8
+ES_filler:
+    .word 0x00
+    movw %ax, %es
+
+/* movw imm16, %ax */
+    .byte 0xb8
+FLAGS_filler:
+    .word 0x00
+    pushw %ax
+    popf
+
+/* movl imm32, %eax*/
+    .byte 0x66, 0xb8
+EAX_filler:
+    .word 0x00
+
+/* int imm8 */
+    .byte 0xCD
+INTNO_filler:
+    .byte 0x00
+
+
+
+    
+
+
 

@@ -22,6 +22,8 @@ _start:
     movw $0x0F41, %es:(0)
     calll real_to_prot
 .code32
+    movl $0x80000, %eax
+    movl %eax, %esp
     jmp kern_startup
 
 die:

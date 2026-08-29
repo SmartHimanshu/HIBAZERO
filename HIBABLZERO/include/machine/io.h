@@ -25,19 +25,19 @@ static inline u32 _inl(u16 port)
 
 static inline void _outb(u16 port, u8 data)
 {
-    asm volatile("outb %0, %1" : : "=a"(data), "Nd"(port));
+    asm volatile("outb %0, %1" : : "a"(data), "Nd"(port));
     return;
 };
 
 static inline void _outw(u16 port, u16 data)
 {
-    asm volatile("outw %0, %1" : : "=a"(data), "Nd"(port));
+    asm volatile("outw %0, %1" : : "a"(data), "Nd"(port));
     return;
 };
 
 static inline void _outl(u16 port, u32 data)
 {
-    asm volatile("outl %0, %1" : : "=a"(data), "Nd"(port));
+    asm volatile("outl %0, %1" : : "a"(data), "Nd"(port));
     return;
 };
 
