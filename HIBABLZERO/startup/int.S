@@ -47,11 +47,11 @@ bios_interrupt:
     
     movl (%edx), %eax
     movl %eax, EAX_filler
-    movw 32(%edx), %ax
-    movw %ax, DS_filler
-    movw 30(%edx), %ax
-    movw %ax, ES_filler
     movw 28(%edx), %ax
+    movw %ax, DS_filler
+    movw 26(%edx), %ax
+    movw %ax, ES_filler
+    movw 24(%edx), %ax
     movw %ax, FLAGS_filler
 
     movl 4(%edx), %ebx
@@ -70,8 +70,6 @@ via_centaur_workaround1:
 
     movw %ds, %ax
     pushw %ax
-
-    
 
 /* movw imm16, %ax */
     .byte 0xb8
