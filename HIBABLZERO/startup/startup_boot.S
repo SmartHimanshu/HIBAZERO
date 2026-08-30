@@ -30,3 +30,5 @@ die:
     jmp die
 
 #include "modeswitch.S"
+
+#include "int.S"
