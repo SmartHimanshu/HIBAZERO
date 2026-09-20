@@ -1,7 +1,7 @@
 #ifndef MACHINE_INT_H
 #define MACHINE_INT_H
 
-#include <types.h>
+#include <hb0/types.h>
 
 struct bios_regs
 {
@@ -16,5 +16,12 @@ struct bios_regs
     u16 ds;
     u16 dummy;
 } PACKED;
+
+#define DEFAULT_INT_FLAGS 0x200
+
+#define CF_FLAG 1
+
+
+void __attribute__((regparm(3))) bios_interrupt(u8 intno, struct bios_regs *regs);
 
 #endif

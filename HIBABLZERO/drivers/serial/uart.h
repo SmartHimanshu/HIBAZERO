@@ -11,7 +11,6 @@ published by the Free Software Foundation.
 #define DRIVER_INTERNAL_SERIAL_INTERNAL_H
 
 #include <hb0/types.h>
-#include <hb0/bool.h>
 #include <drivers/serial.h>
 
 enum chip_type

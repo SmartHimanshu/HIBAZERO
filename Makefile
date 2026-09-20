@@ -1,6 +1,8 @@
 .PHONY: all clean run
+
 all:
 	$(MAKE) -C HIBABLZERO
+
 clean:
 	rm -f HIBABLZERO/bin/*
 	rm -f HIBABLZERO/build/*

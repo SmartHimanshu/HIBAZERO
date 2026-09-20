@@ -10,6 +10,7 @@ published by the Free Software Foundation.
 #include <startup/init.h>
 #include <hb0/types.h>
 #include <drivers/serial.h>
+#include <machine/int.h>
 
 
 void NORETURN kern_startup(void)
@@ -24,6 +25,8 @@ void NORETURN kern_startup(void)
     
     int res = serial_interface_init(&interface, 1, PORT_COM1);
 
+    struct bios_regs regs = {0};
+    
     
 
     while(1) { ; };

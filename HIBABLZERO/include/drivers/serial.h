@@ -11,7 +11,6 @@ published by the Free Software Foundation.
 #define DRIVER_SERIAL_H
 
 #include <hb0/types.h>
-#include <hb0/bool.h>
 
 #define PORT_COM1 0x3F8 
 #define PORT_COM2 0x2F8 
