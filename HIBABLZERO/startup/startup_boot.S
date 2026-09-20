@@ -17,9 +17,6 @@ published by the Free Software Foundation.
 .section .startup, "ax"
 _start:
     cli // Just make sure we are good with the interrupts
-    movw $0xb800, %ax
-    movw %ax, %es
-    movw $0x0F41, %es:(0)
     calll real_to_prot
 .code32
     movl $0x80000, %eax

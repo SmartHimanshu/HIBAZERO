@@ -14,11 +14,7 @@ published by the Free Software Foundation.
 
 
 void NORETURN kern_startup(void)
-{
-    u16* vga_mem = (u16*)0xb8000;
-    vga_mem[1] = 0x0F41;
-
-    
+{    
     struct serial_port port = {PORT_COM1};
     struct serial_interface interface = {0};
     interface.port = &port;
@@ -27,6 +23,20 @@ void NORETURN kern_startup(void)
 
     struct bios_regs regs = {0};
     
+    regs.eax = 0x0E00 | 'A';
+    regs.ebx = 0x000F;
+    
+    while(interface.putc(&interface, 'A'))
+    {
+
+    }
+
+    bios_interrupt(0x10, &regs);
+
+    while(interface.putc(&interface, 'A'))
+    {
+
+    }
 
     while(1) { ; };
 };

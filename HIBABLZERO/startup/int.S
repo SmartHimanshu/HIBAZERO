@@ -138,12 +138,12 @@ via_centaur_workaround2:
 
     movl EAX_filler, %eax
     movl %eax, (%edx)
-    movl FLAGS_filler, %eax
-    movl %eax, 24(%edx)
-    movl ES_filler, %eax
-    movl %eax, 26(%edx)
-    movl DS_filler, %eax
-    movl %eax, 28(%edx)
+    movw FLAGS_filler, %ax
+    movw %ax, 24(%edx)
+    movw ES_filler, %ax
+    movw %ax, 26(%edx)
+    movw DS_filler, %ax
+    movw %ax, 28(%edx)
 
     popl %ebp
     popl %esi
