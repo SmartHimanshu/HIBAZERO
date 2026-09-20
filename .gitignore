@@ -4,3 +4,5 @@ HIBABLZERO/build
 *.o
 *.img
 *.bin
+
+compile_flags.txt

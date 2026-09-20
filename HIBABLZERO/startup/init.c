@@ -27,7 +27,6 @@ void NORETURN kern_startup(void)
 
     struct bios_regs regs = {0};
     
-    
 
     while(1) { ; };
 };
