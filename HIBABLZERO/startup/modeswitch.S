@@ -121,8 +121,16 @@ realidt:
 protidt:
     .word 0
     .long 0
+
+prot_stack_location:
+    .long 0x80000
+scratch:
+    .long 0
+
 .globl real_to_prot
 real_to_prot:
+    cli
+
     xorw %ax, %ax
     movw %ax, %ds
 
@@ -143,16 +151,38 @@ pmcseg:
     movw %ax, %ss
     movw %ax, %ds
 
-    sidt realidt
-    lidt protidt
+    movl (%esp), %eax
+    movl %eax, scratch
 
-    
+    movl prot_stack_location, %eax
+    movl %eax, %esp
+    movl %eax, %ebp 
+
+    movl scratch, %eax
+    movl %eax, (%esp)
+
+
+    sidt realidt
+    lidt protidt    
 
     ret
 
 prot_to_real:
+    lgdt gdt_descriptor
+
     sidt protidt
     lidt realidt
+
+    movl %esp, %eax
+	movl %eax, prot_stack_location
+
+    movl (%esp), %eax
+	movl %eax, 0x1FF0
+
+    movl $0x1FF0, %eax
+	movl %eax, %esp
+	movl %eax, %ebp
+
 
     movw $0x10, %ax
     movw %ax, %ds

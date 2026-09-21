@@ -8,7 +8,7 @@ clean:
 	rm -f HIBABLZERO/build/*
 
 run: HIBABLZERO/build/disk.img
-	qemu-system-i386 -hda HIBABLZERO/build/disk.img
+	qemu-system-i386 -hda HIBABLZERO/build/disk.img -serial stdio
 
 
 #NOTE: I love making purely excellent help tools for my make.

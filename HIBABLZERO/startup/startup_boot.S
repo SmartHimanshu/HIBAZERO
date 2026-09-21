@@ -19,8 +19,6 @@ _start:
     cli // Just make sure we are good with the interrupts
     calll real_to_prot
 .code32
-    movl $0x80000, %eax
-    movl %eax, %esp
     jmp kern_startup
 
 die:

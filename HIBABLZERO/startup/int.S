@@ -99,6 +99,8 @@ EAX_filler:
 INTNO_filler:
     .byte 0x00
 
+
+
     /* 
     We are going to preserve all the sensitive things in previous 
     self-modifying code slots so we don't waste memory and become
@@ -120,11 +122,13 @@ INTNO_filler:
 
     popf
 
+
 via_centaur_workaround2:
     .byte 0x90, 0x90
 
     calll real_to_prot
     .code32
+
 
     popl %eax /* Get the bios regs addr */
 
@@ -151,6 +155,7 @@ via_centaur_workaround2:
     popl %ecx
     popl %ebx
     popl %eax
+
 
     ret
     

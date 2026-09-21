@@ -21,22 +21,6 @@ void NORETURN kern_startup(void)
     
     int res = serial_interface_init(&interface, 1, PORT_COM1);
 
-    struct bios_regs regs = {0};
     
-    regs.eax = 0x0E00 | 'A';
-    regs.ebx = 0x000F;
-    
-    while(interface.putc(&interface, 'A'))
-    {
-
-    }
-
-    bios_interrupt(0x10, &regs);
-
-    while(interface.putc(&interface, 'A'))
-    {
-
-    }
-
     while(1) { ; };
 };
