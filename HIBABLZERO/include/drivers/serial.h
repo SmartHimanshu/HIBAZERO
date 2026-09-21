@@ -37,10 +37,10 @@ struct serial_interface
 {
     struct serial_port* port;
     const struct serial_chip* chip;
-    int (*putc)(struct serial_interface *console, u8 c);
-    int (*backspace)(struct serial_interface *console);
-    int (*newline)(struct serial_interface *console);
-    int (*readc)(struct serial_interface *console, u8* c);
+    void (*putc)(struct serial_interface *console, u8 c);
+    void (*backspace)(struct serial_interface *console);
+    void (*newline)(struct serial_interface *console);
+    void (*readc)(struct serial_interface *console, u8* c);
     bool (*can_read)(struct serial_port* port);
     bool (*can_write)(struct serial_port* port);
 };

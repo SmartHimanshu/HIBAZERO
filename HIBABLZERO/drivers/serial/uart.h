@@ -34,5 +34,8 @@ int serial_recv8250(struct serial_interface* chip, u8* data);
 bool can_serial_send(struct serial_port* port);
 int serial_send8250(struct serial_interface* chip, u8 data);
 int serial_newline8250(struct serial_interface* chip);
-
+void serial_async_backspace(struct serial_interface* chip);
+void serial_async_newline(struct serial_interface* chip);
+void serial_async_recv(struct serial_interface* chip, u8* data);
+void serial_async_send(struct serial_interface* chip, u8 data);
 #endif

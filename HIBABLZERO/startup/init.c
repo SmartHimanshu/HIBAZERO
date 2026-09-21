@@ -6,14 +6,6 @@ This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.
 */
-/* 
-HIBAZERO
-Copyright (C) 2026 Himanshu Bakshi
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 2 as
-published by the Free Software Foundation.
-*/
 
 #include <startup/init.h>
 #include <hb0/types.h>
@@ -29,6 +21,10 @@ void NORETURN kern_startup(void)
     
     serial_interface_init(&interface, 1, PORT_COM1);
 
-
-    while(1) { ; };
+    while(true)
+    {
+        char c;
+        interface.readc(&interface, &c);
+        interface.putc(&interface, c);
+    }
 };

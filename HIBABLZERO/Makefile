@@ -9,16 +9,16 @@ OBJS := bin/startup_boot.S.o bin/init.c.o bin/serial_uart_chip.c.o
 all: build/disk.img
 
 build/core.bin: $(OBJS)
-	$(CC) $(ASFLAGS) -Tlinker.ld -o $@ $(OBJS)
-	$(CC) $(ASFLAGS) -Tlinkerelf.ld -o build/coreelf.o $(OBJS)
+	$(CC) $(ASFLAGS) -Tscript/linker.ld -o $@ $(OBJS)
+	$(CC) $(ASFLAGS) -Tscript/linkerelf.ld -o build/coreelf.o $(OBJS)
 
 build/boot.bin: boot/boot.S
-	$(CC) $(ASFLAGS) -m32 -Tboot/bootlinker.ld -o $@ $<
-	$(CC) $(ASFLAGS) -m32 -Tboot/bootlinkerelf.ld -o build/boot.o -c $<
+	$(CC) $(ASFLAGS) -m32 -Tscript/bootlinker.ld -o $@ $<
+	$(CC) $(ASFLAGS) -m32 -Tscript/bootlinkerelf.ld -o build/boot.o -c $<
 
 build/diskboot.bin: boot/diskboot.S
-	$(CC) $(ASFLAGS) -m32 -Tboot/diskbootlinker.ld -o $@ $<
-	$(CC) $(ASFLAGS) -m32 -Tboot/bootlinkerelf.ld -o build/diskboot.o -c $<
+	$(CC) $(ASFLAGS) -m32 -Tscript/diskbootlinker.ld -o $@ $<
+	$(CC) $(ASFLAGS) -m32 -Tscript/bootlinkerelf.ld -o build/diskboot.o -c $<
 
 bin/startup_boot.S.o: startup/startup_boot.S
 	$(CC) $(ASFLAGS) -o $@ -c $<

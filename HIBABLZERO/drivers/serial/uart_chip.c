@@ -137,10 +137,10 @@ int serial_interface_init(struct serial_interface* interface, u16 divisor, u16 p
     {
         interface->can_read = can_serial_recv;
         interface->can_write = can_serial_send;
-        interface->backspace = serial_backspace8250;
-        interface->newline = serial_newline8250;
-        interface->putc = serial_send8250;
-        interface->readc = serial_recv8250;
+        interface->backspace = serial_async_backspace;
+        interface->newline = serial_async_newline;
+        interface->putc = serial_async_send;
+        interface->readc = serial_async_recv;
     }
 
     return status;
@@ -235,4 +235,36 @@ int serial_backspace8250(struct serial_interface* chip)
     }
 
     return SUCCESS;
+}
+
+void serial_async_send(struct serial_interface* chip, u8 data)
+{
+    while(serial_send8250(chip, data))
+    {
+        ;
+    }
+}
+
+void serial_async_recv(struct serial_interface* chip, u8* data)
+{
+    while(serial_recv8250(chip, data))
+    {
+        ;
+    }
+}
+
+void serial_async_newline(struct serial_interface* chip)
+{
+    while(serial_newline8250(chip))
+    {
+        ;
+    }
+}
+
+void serial_async_backspace(struct serial_interface* chip)
+{
+    while(serial_backspace8250(chip))
+    {
+        ;
+    }
 }
