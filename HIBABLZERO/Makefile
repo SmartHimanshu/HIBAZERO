@@ -2,7 +2,7 @@
 CC := i686-elf-gcc
 LD := i686-elf-ld
 STARTUPASFLAGS := -g -Iinclude
-ASFLAGS := $(STARTUPASFLAGS) -ffreestanding -nostdlib -nostdinc -Wall -Wextra
+ASFLAGS := $(STARTUPASFLAGS) -Wa,--divide -ffreestanding -nostdlib -nostdinc -Wall -Wextra
 CFLAGS := $(ASFLAGS)
 OBJS := bin/startup_boot.S.o bin/init.c.o bin/serial_uart_chip.c.o
 

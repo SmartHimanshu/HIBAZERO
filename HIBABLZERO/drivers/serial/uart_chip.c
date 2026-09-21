@@ -59,7 +59,7 @@ const struct serial_chip uart_standard_chips_config[] =
 
 };
 
-int serial_get_chip(struct serial_port* port, struct serial_chip** detected_chip_version)
+int serial_get_chip(struct serial_port* port, const struct serial_chip **detected_chip_version)
 {
     serial_out(port->iobase, 2, 0xE7); // Write to FRC
     /* 
@@ -108,7 +108,7 @@ void serial_set_dl(struct serial_port* port, u16 value)
 
 // Get serial divisor latch
 
-u16 serial_get_dl(struct serial_port* port, u16 value)
+u16 serial_get_dl(struct serial_port* port)
 {
     u8 DLL = serial_in(port->iobase, 0);
     u8 DLH = serial_in(port->iobase, 1);

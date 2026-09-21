@@ -11,6 +11,8 @@ published by the Free Software Foundation.
 
 .file "diskboot.S"
 
+#include <machine/memory.h>
+
 .section .text
 
 .globl _start
@@ -32,14 +34,14 @@ _start:
 
     /*
     Since diskboot is all about loading core as fast as possible,
-    we will use the maximum sector limit for BIOS read. (127)
+    we will use the maximum sector limit for BIOS read. (8)
     */
 
     xorw %dx, %dx
     movw core_size, %ax
-    movw $127, %bx
+    movw $HB0_MAX_SECTOR_STREAM, %bx
     divw %bx
-    movw %ax, scratch   //Scratch stores number of times to do 127 sector loads
+    movw %ax, scratch   //Scratch stores number of times to do 8 sector loads
     movw %dx, scratch+2 //Scratch+2 stores remainder
 
 
@@ -77,11 +79,11 @@ lba_setup:
 
     jmp 2f
 1:
-    movw $127, %ax
+    movw $HB0_MAX_SECTOR_STREAM, %ax
     movw %ax, 2(%si)
 
 2:
-    movw scratch, %bx //Move the amount of times we have to read 127 sectors.
+    movw scratch, %bx //Move the amount of times we have to read 8 sectors.
 
     // Now that we have filled no.of sectors, its time to fill lba addr.
     movl core_lba_low, %eax
@@ -111,7 +113,7 @@ lba:
 
     
 
-    // Now we transfer 127 sectors 
+    // Now we transfer 8 sectors 
 
     cld
 
@@ -119,13 +121,13 @@ lba:
     push %ds
     push %si
 
-    movw $32512, %cx
+    movw $(HB0_MAX_STREAM_SIZE / 2), %cx
     xorw %ax, %ax
     movw %ax, %di
     movw %ax, %si
     movw core_load_addr_seg, %ax //Load core_load_addr
     movw %ax, %es
-    movw $0x7000, %ax
+    movw $HB0_DISK_BUFFER_SEG, %ax
     movw %ax, %ds
     
 
@@ -136,16 +138,16 @@ lba:
     pop %ds
     pop %es
 
-    addw $4064, core_load_addr_seg
+    addw $(HB0_MAX_STREAM_SIZE >> 4), core_load_addr_seg
 
     cmpw $1, %bx    
     jb jump_to_core // If this is remainder sector read then simply jump to core.
-    jne 1f          // If this is the last 127 read then we will load remainder sectors here
+    jne 1f          // If this is the last 8 read then we will load remainder sectors here
 
     xorl %eax, %eax
     movw scratch+2, %ax
     movw %ax, 2(%si)
-    addl $127, 8(%si) 
+    addl $HB0_MAX_SECTOR_STREAM, 8(%si) 
     jnc 2f
 
 
@@ -153,7 +155,7 @@ lba:
     jmp 2f
 
 1:
-    addl $127, 8(%si)
+    addl $HB0_MAX_SECTOR_STREAM, 8(%si)
     jnc 2f
 
     addl $1, 12(%si)
@@ -178,10 +180,10 @@ chs_setup:
 
     jmp 2f
 1:
-    movw $127, %ax
+    movw $HB0_MAX_SECTOR_STREAM, %ax
 
 2:
-    //The count of the times to do 127 read stored in scratch.
+    //The count of the times to do 8 read stored in scratch.
 
 
 chs:
@@ -196,7 +198,7 @@ chs:
     movb current_drive, %dl
     
 
-    movw $0x7000, %bx
+    movw $HB0_DISK_BUFFER_SEG, %bx
     movw %bx, %es
     xorw %bx, %bx
 
@@ -213,13 +215,13 @@ chs:
     push %ds
     push %si
 
-    movw $32512, %cx
+    movw $(HB0_MAX_STREAM_SIZE / 2), %cx
     xorw %ax, %ax
     movw %ax, %di
     movw %ax, %si
     movw core_load_addr_seg, %ax //Load core_load_addr
     movw %ax, %es
-    movw $0x7000, %ax
+    movw $HB0_DISK_BUFFER_SEG, %ax
     movw %ax, %ds
 
     rep
@@ -230,7 +232,7 @@ chs:
     pop %es
     pop %ax
 
-    addw $4064, core_load_addr_seg
+    addw $(HB0_MAX_STREAM_SIZE >> 4), core_load_addr_seg
 
     movw scratch, %bx
     cmpb $1, %bl
@@ -240,7 +242,7 @@ chs:
     xorl %eax, %eax
     movw scratch+2, %ax
 1:
-    addl $127, core_lba_low
+    addl $HB0_MAX_SECTOR_STREAM, core_lba_low
     subw $1, scratch
     jmp lba 
 
@@ -279,7 +281,7 @@ lba_to_chs:
     ret
 
 jump_to_core:
-    ljmp $0, $0x8000
+    ljmp $0, $HB0_CORE_LOAD_ADDR
 
 
 error:
@@ -326,7 +328,7 @@ scratch:
     .quad 0
 
 core_load_addr_seg:
-    .word 0x800
+    .word HB0_CORE_LOAD_SEG
 
 current_drive:
     .byte 0
@@ -335,7 +337,7 @@ current_drive:
 
 core: 
     core_size: 
-        .word 256
+        .word HB0_CORE_SECTOR_COUNT
     core_lba_low:
         .long 11
     core_lba_high:

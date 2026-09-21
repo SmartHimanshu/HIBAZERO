@@ -25,9 +25,9 @@ enum chip_type
 
 
 int serial_backspace8250(struct serial_interface* chip);
-int serial_get_chip(struct serial_port* port, struct serial_chip** detected_chip_version);
+int serial_get_chip(struct serial_port* port, const struct serial_chip** detected_chip_version);
 void serial_set_dl(struct serial_port* port, u16 value);
-u16 serial_get_dl(struct serial_port* port, u16 value);
+u16 serial_get_dl(struct serial_port* port);
 int serial_chip_test(struct serial_port* port);
 bool can_serial_recv(struct serial_port* port);
 int serial_recv8250(struct serial_interface* chip, u8* data);

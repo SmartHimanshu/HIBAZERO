@@ -36,7 +36,7 @@ struct serial_port
 struct serial_interface
 {
     struct serial_port* port;
-    struct serial_chip* chip;
+    const struct serial_chip* chip;
     int (*putc)(struct serial_interface *console, u8 c);
     int (*backspace)(struct serial_interface *console);
     int (*newline)(struct serial_interface *console);

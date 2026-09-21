@@ -11,6 +11,8 @@ published by the Free Software Foundation.
 
 .file "boot.S"
 
+#include <machine/memory.h>
+
 .globl _start
 _start:
     //These are generally thrashed by bios so we have to restore them.
@@ -23,7 +25,7 @@ _start:
     movw %ax, %ss
     movw %ax, %di
 
-    movw $0x7c00, %sp
+    movw $HB0_BIOS_BOOT_SECTOR_LOAD_ADDR, %sp
 
     sti
 
@@ -189,7 +191,7 @@ chs:
     andb $0b11000000, %al
     orb %al, %cl    //Load high 2 bits of cylinder in upper two bits of cl
 
-    movw $0x7000, %bx
+    movw $HB0_DISK_BUFFER_SEG, %bx
     movw %bx, %es
     xorw %bx, %bx
 
@@ -218,14 +220,14 @@ copy:
     */
 
 
-    movw $0x7000, %ax
+    movw $HB0_DISK_BUFFER_SEG, %ax
     movw %ax, %ds
     movw $0, %si
-    movw $0x600, %ax
+    movw $HB0_DISK_BOOT_LOAD_SEG, %ax
     movw %ax, %es
     movw $0, %di
 
-    movw $0xE00, %cx
+    movw $((HB0_DISK_BOOT_SIZE)/2), %cx
 
     rep
     movsw
@@ -233,7 +235,7 @@ copy:
     movw $dap, %si
 
     //Jump to diskboot.
-    ljmp $0, $0x6000
+    ljmp $0, $HB0_DISK_BOOT_LOAD_ADDR
 
 faulty_system:
     movw $faulty_msg, %si
@@ -280,7 +282,7 @@ dap:
     dap_rsrv: .byte 0
     dap_sectors: .word 2
     dap_transfer_offset: .word 0x0000
-    dap_transfer_segment: .word 0x7000
+    dap_transfer_segment: .word HB0_DISK_BUFFER_SEG
     dap_lba_addr: .quad 0 // Filled at runtime
 addressing_mode: .byte 0
 
@@ -297,6 +299,6 @@ diskboot_lba_high:
 diskboot_disk_num:
     .byte 0xFF 
 
-.org 0x1FE
+.org (HB0_BIOS_BOOT_SECTOR_SIZE - 2)
 
-.word 0xAA55
+.word HB0_BIOS_BOOT_SECTOR_MAGIC
