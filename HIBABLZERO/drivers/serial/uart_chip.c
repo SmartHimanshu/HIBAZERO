@@ -24,7 +24,7 @@ const struct serial_chip uart_standard_chips_config[] =
     },
 
     [U8520] = {
-        "UART 8520",
+        .chip_name="UART 8520",
         false,
         1
     },
@@ -92,7 +92,6 @@ void serial_get_chip(struct serial_port* port, const struct serial_chip **detect
     */
     
     u8 IIR = serial_in(port->iobase, 2);
-
     if(IIR&(1<<7))
     { 
         if(IIR&(1<<6))
@@ -340,7 +339,7 @@ int serial_send_fifo_batched(struct serial_port* port, u8* data, u32 length)
 
 void serial_newline(struct serial_interface* chip)
 {
-    chip->puts(chip->port, "\r\n", 2);
+    chip->puts(chip->port, (u8*)"\r\n", 2);
 }
 
 // A synchronous backspace function that would send backspace instruction over.

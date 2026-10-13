@@ -1,0 +1,99 @@
+[
+  {
+    "file": "boot/boot.S",
+    "arguments": [
+      "/home/himanshubakshi/osdevi386/tools/bin/i686-elf-gcc",
+      "-g",
+      "-Iinclude",
+      "-Wa,--divide",
+      "-ffreestanding",
+      "-nostdinc",
+      "-Wall",
+      "-Wextra",
+      "-m32",
+      "-Tscript/bootlinker.ld",
+      "-o",
+      "build/boot.bin",
+      "boot/boot.S"
+    ],
+    "directory": "/home/himanshubakshi/coding/osdev/hibazero/HIBAZERO/HIBABLZERO",
+    "output": "build/boot.bin"
+  },
+  {
+    "file": "boot/diskboot.S",
+    "arguments": [
+      "/home/himanshubakshi/osdevi386/tools/bin/i686-elf-gcc",
+      "-g",
+      "-Iinclude",
+      "-Wa,--divide",
+      "-ffreestanding",
+      "-nostdinc",
+      "-Wall",
+      "-Wextra",
+      "-m32",
+      "-Tscript/diskbootlinker.ld",
+      "-o",
+      "build/diskboot.bin",
+      "boot/diskboot.S"
+    ],
+    "directory": "/home/himanshubakshi/coding/osdev/hibazero/HIBAZERO/HIBABLZERO",
+    "output": "build/diskboot.bin"
+  },
+  {
+    "file": "startup/startup_boot.S",
+    "arguments": [
+      "/home/himanshubakshi/osdevi386/tools/bin/i686-elf-gcc",
+      "-g",
+      "-Iinclude",
+      "-Wa,--divide",
+      "-ffreestanding",
+      "-nostdinc",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "bin/startup_boot.S.o",
+      "-c",
+      "startup/startup_boot.S"
+    ],
+    "directory": "/home/himanshubakshi/coding/osdev/hibazero/HIBAZERO/HIBABLZERO",
+    "output": "bin/startup_boot.S.o"
+  },
+  {
+    "file": "startup/init.c",
+    "arguments": [
+      "/home/himanshubakshi/osdevi386/tools/bin/i686-elf-gcc",
+      "-g",
+      "-Iinclude",
+      "-Wa,--divide",
+      "-ffreestanding",
+      "-nostdinc",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "bin/init.c.o",
+      "-c",
+      "startup/init.c"
+    ],
+    "directory": "/home/himanshubakshi/coding/osdev/hibazero/HIBAZERO/HIBABLZERO",
+    "output": "bin/init.c.o"
+  },
+  {
+    "file": "drivers/serial/uart_chip.c",
+    "arguments": [
+      "/home/himanshubakshi/osdevi386/tools/bin/i686-elf-gcc",
+      "-g",
+      "-Iinclude",
+      "-Wa,--divide",
+      "-ffreestanding",
+      "-nostdinc",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "bin/serial_uart_chip.c.o",
+      "-c",
+      "drivers/serial/uart_chip.c"
+    ],
+    "directory": "/home/himanshubakshi/coding/osdev/hibazero/HIBAZERO/HIBABLZERO",
+    "output": "bin/serial_uart_chip.c.o"
+  }
+]
