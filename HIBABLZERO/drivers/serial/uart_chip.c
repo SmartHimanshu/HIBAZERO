@@ -33,21 +33,18 @@ const struct serial_chip uart_standard_chips_config[] =
         "UART 16450",
         false,
         1
-    }/*,
-
-    We are gonna make the drivers and fifo support later for our bootloader for the
-    following so marked useless for now.
+    },
 
     [U16550] = {
         "UART 16550",
         true,
-        1
+        16
     },
 
     [U16550A] = {
         "UART 16550A",
         true,
-        1
+        16
     },
 
     [U16750] = {
@@ -55,24 +52,67 @@ const struct serial_chip uart_standard_chips_config[] =
         false,
         1
     },
-    */
 
 };
 
-int serial_get_chip(struct serial_port* port, const struct serial_chip **detected_chip_version)
+// Set serial divisor latch
+
+static inline void serial_set_dl(struct serial_port* port, u16 value)
+{
+    serial_out(port->iobase, 0, value&0xFF);
+    serial_out(port->iobase, 1, (value>>8)&0xFF);
+}
+
+// Get serial divisor latch
+
+static inline u16 serial_get_dl(struct serial_port* port)
+{
+    u8 DLL = serial_in(port->iobase, 0);
+    u8 DLH = serial_in(port->iobase, 1);
+    return ((u16)DLH<<8) | DLL;
+}
+
+/*
+Serial chip detection mechanism that will be used
+to determine which kind of UART serial chip we
+are dealing with.
+
+NOTE: This function also enables fifo for any chip
+we encounter that has fifo supported with it.
+*/
+
+void serial_get_chip(struct serial_port* port, const struct serial_chip **detected_chip_version)
 {
     serial_out(port->iobase, 2, 0xE7); // Write to FRC
+    
     /* 
     When we write this into FRC, we can check IIR to see if we have FIFO
     Support with us. This means that we can detect which chip we are dealing
     with and there support for FIFO. We have to now check which flags got set.
     */
+    
     u8 IIR = serial_in(port->iobase, 2);
 
     if(IIR&(1<<7))
     { 
-        *detected_chip_version = &uart_standard_chips_config[U8520];
-        return SUCCESS;
+        if(IIR&(1<<6))
+        {
+            if(IIR&(1<<5))
+            {
+                // Bit 5 indicates 64 byte fifo, which is supported in U16750.
+                *detected_chip_version = &uart_standard_chips_config[U16750];
+            }
+            else
+            {
+                // Ordinary fifo, which is supported in regular 16550A.
+                *detected_chip_version = &uart_standard_chips_config[U16550A];
+            }
+        }
+        else
+        {
+            // FIFO enabled but not usable. So we assume 16550.
+            *detected_chip_version = &uart_standard_chips_config[U16550];
+        }
     }
     else
     {
@@ -87,40 +127,25 @@ int serial_get_chip(struct serial_port* port, const struct serial_chip **detecte
         {
             // Scratch register exists, so we are gonna be going forward with 16450.
             *detected_chip_version = &uart_standard_chips_config[U16450];
-            return SUCCESS;
         }
         else
         {
             // Scratch register doesn't exist. So we are going to have to be with 8250.
             *detected_chip_version = &uart_standard_chips_config[U8520];
-            return SUCCESS;
         }
     }
 }
 
-// Set serial divisor latch
-
-void serial_set_dl(struct serial_port* port, u16 value)
-{
-    serial_out(port->iobase, 0, value&0xFF);
-    serial_out(port->iobase, 1, (value>>8)&0xFF);
-}
-
-// Get serial divisor latch
-
-u16 serial_get_dl(struct serial_port* port)
-{
-    u8 DLL = serial_in(port->iobase, 0);
-    u8 DLH = serial_in(port->iobase, 1);
-    return ((u16)DLH<<8) | DLL;
-}
+/*
+Parent init function. Designed to detect
+the chip at port, as well as initlialize
+the baud rate and set serial ops respectfully.
+*/
 
 int serial_interface_init(struct serial_interface* interface, u16 divisor, u16 port)
 {
     interface->port->iobase = port;
-    int status = serial_get_chip(interface->port, &interface->chip);
-
-    if(status) return status;
+    serial_get_chip(interface->port, &interface->chip);
 
     // Set baud rate.
     serial_out(interface->port->iobase, 3, 0x80);
@@ -128,32 +153,145 @@ int serial_interface_init(struct serial_interface* interface, u16 divisor, u16 p
 
     /* 
     No stop bit, 8 bit data length for simple communication. Our bootloader
-    doesn't need advanced features right now. 
+    doesn't need advanced features. 
     */
 
     serial_out(interface->port->iobase, 3, 0x3);
 
-    if(interface->chip->fifo_size==1)
-    {
-        interface->can_read = can_serial_recv;
-        interface->can_write = can_serial_send;
-        interface->backspace = serial_async_backspace;
-        interface->newline = serial_async_newline;
-        interface->putc = serial_async_send;
-        interface->readc = serial_async_recv;
-    }
+    int status = serial_chip_test(interface->port);
+
+    interface->newline = serial_newline;
+    interface->backspace = serial_backspace;
+    interface->readc = serial_recv;
+    interface->puts = (interface->chip->fifo_size==1) ? serial_send_nf_batched : serial_send_fifo_batched;
 
     return status;
 }
 
+/*
+This function basically checks if serial input can be drawn.
++ve for yes.
+0 for no.
+*/
+
+static inline u8 can_serial_recv(struct serial_port* port)
+{
+    return (serial_in(port->iobase, 5) & 1);
+}
+
+/*
+A synchronus recv that waits for the next character to be
+available for getting drawn. Sets data to the read character.
+*/
+
+void serial_recv(struct serial_port* port, u8* data)
+{
+    while(!can_serial_recv(port))
+    {
+        ;   // Wait for serial to be able to get input.
+    }
+    *data = serial_in(port->iobase, 0);
+}
+
+/*
+Checks whether data can be sent through. 
+1 for yes. 0 for no. (no fifo)
+*/
+
+static inline u8 can_serial_send_nf(struct serial_port* port)
+{
+    return (serial_in(port->iobase, 5) & (1<<5));
+}
+
+/*
+Checks whether data has been emptied in fifo.
+1 for yes, 0 for no. (also supports normal)
+*/
+
+static inline u8 can_serial_send_fifo(struct serial_port* port)
+{
+    return (serial_in(port->iobase, 5) & (1<<6));
+}
+
+/*
+A synchronous send that will only send 1 to 16
+bytes over. no fifo.
+*/
+
+int serial_send_nf(struct serial_port* port, u8 data[16], u8 len)
+{
+    if ((len > 16) || (len == 0)) return -ERRINV;
+    for(u8 i = 0; i < len; i++)
+    {
+        while(!can_serial_send_nf(port))
+        {
+            ;
+        }
+        serial_out(port->iobase, 0, data[i]);
+    }
+    return SUCCESS;
+}
+
+/*
+A synchronous send that will only send 1 to 16
+bytes over via fifo.
+*/
+
+int serial_send_fifo(struct serial_port* port, u8 data[16], u8 len)
+{
+    if ((len > 16) || (len == 0)) return -ERRINV;
+    while(!can_serial_send_fifo(port))
+    {
+        ;
+    }
+    for(u8 i = 0; i < len; i++)
+    {
+        serial_out(port->iobase, 0, data[i]);
+    }
+    return SUCCESS;
+}
+
+/*
+This is a loopback mode serial chip test function with 
+timeout that will test the chip to determine if it can be used.
+*/
+
 int serial_chip_test(struct serial_port* port)
 {
-    serial_out(port->iobase, 4, 1<<4);
-    serial_out(port->iobase, 0, ARBRITRARY_VALUE);
-    u8 val = serial_in(port->iobase, 0);
+    serial_out(port->iobase, 4, 1<<4);  // Set MCR to loopback mode.
+    
+    // First timeout supported loop
+    u16 i = 10000;
+    bool sent = false;
+    while(i--)
+    {
+        if(can_serial_send_nf(port))
+        {
+            serial_out(port->iobase, 0, ARBRITRARY_VALUE);
+            sent = true;
+            break;
+        }
+    }
+    if(!sent) return -ERRFAULTY;
+    
+    // Second timeout supported loop
+    i = 10000;
+    sent = false;    // Reuse the boolean and u16 variables
+    u8 val;
+    while(i--)
+    {
+        if(can_serial_recv(port))
+        {
+            val = serial_in(port->iobase, 0);
+            sent = true;
+            break;
+        }
+    }
+    if(!sent) return -ERRFAULTY;
+
     if(val==ARBRITRARY_VALUE)
     {
-        serial_out(port->iobase, 4, 0);
+        serial_out(port->iobase, 4, 0); // Disable loopback mode.
         return SUCCESS;
     }
     else
@@ -162,109 +300,53 @@ int serial_chip_test(struct serial_port* port)
     }
 }
 
-bool can_serial_recv(struct serial_port* port)
-{
-    return (serial_in(port->iobase, 5) & 1);
-}
+/*
+A synchronous send to serial device that sends data out 
+in batches. Can transmit data of size of up to 4GB - 1.
+Transmits data without the use of fifo. (NO FIFO).
+*/
 
-int serial_recv8250(struct serial_interface* chip, u8* data)
+int serial_send_nf_batched(struct serial_port* port, u8* data, u32 length)
 {
-    if(can_serial_recv(chip->port))
+    if(length==0) return -ERRINV;
+    for(u32 i = 0; i < length; i+=16)
     {
-        *data = serial_in(chip->port->iobase, 0);
-        return SUCCESS;
-    }
-    else
-    {
-        return -FAILED;
-    }
-}
-
-bool can_serial_send(struct serial_port* port)
-{
-    return (serial_in(port->iobase, 5) & (1<<5));
-}
-
-int serial_send8250(struct serial_interface* chip, u8 data)
-{
-    if(can_serial_send(chip->port))
-    {
-        serial_out(chip->port->iobase, 0, data);
-        return SUCCESS;
-    }
-    else
-    {
-        return -FAILED;
-    }
-}
-
-int serial_newline8250(struct serial_interface* chip)
-{
-    int status = serial_send8250(chip, '\r');
-    if(status)
-    {
-        return status;
-    }
-    else
-    {
-        while(serial_send8250(chip, '\n'))
-        {
-            ;
-        }
+        u32 remaining = length - i;
+        u8 batch = (remaining >= 16) ? 16 : (u8)remaining;
+        serial_send_nf(port, data+i, batch);
     }
     return SUCCESS;
 }
 
-int serial_backspace8250(struct serial_interface* chip)
-{
-    int status = serial_send8250(chip, 0x08);
-    if(status)
-    {
-        return status;
-    }
-    else
-    {
-        while(serial_send8250(chip, 0x20))
-        {
-            ;
-        }
-        while(serial_send8250(chip, 0x08))
-        {
-            ;
-        }
-    }
+/*
+A synchronous send to serial device that sends data out 
+in batches. Can transmit data of size of up to 4GB - 1.
+Transmits data via the use of fifo. (FIFO).
+*/
 
+int serial_send_fifo_batched(struct serial_port* port, u8* data, u32 length)
+{
+    if(length==0) return -ERRINV;
+    for(u32 i = 0; i < length; i+=16)
+    {
+        u32 remaining = length - i;
+        u32 current_batch = (remaining >= 16) ? 16 : (u8)remaining;
+        serial_send_fifo(port, data+i, current_batch);
+    }
     return SUCCESS;
 }
 
-void serial_async_send(struct serial_interface* chip, u8 data)
+// A synchronous newline function that would send newline instruction over.
+
+void serial_newline(struct serial_interface* chip)
 {
-    while(serial_send8250(chip, data))
-    {
-        ;
-    }
+    chip->puts(chip->port, "\r\n", 2);
 }
 
-void serial_async_recv(struct serial_interface* chip, u8* data)
-{
-    while(serial_recv8250(chip, data))
-    {
-        ;
-    }
-}
+// A synchronous backspace function that would send backspace instruction over.
 
-void serial_async_newline(struct serial_interface* chip)
+void serial_backspace(struct serial_interface* chip)
 {
-    while(serial_newline8250(chip))
-    {
-        ;
-    }
-}
-
-void serial_async_backspace(struct serial_interface* chip)
-{
-    while(serial_backspace8250(chip))
-    {
-        ;
-    }
+    u8 backspace_arr[3] = {0x08, 0x20, 0x08};
+    chip->puts(chip->port, backspace_arr, 3);
 }

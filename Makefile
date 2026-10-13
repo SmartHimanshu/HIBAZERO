@@ -1,6 +1,8 @@
 .PHONY: all clean run
 
 all:
+	mkdir -p HIBABLZERO/bin
+	mkdir -p HIBABLZERO/build
 	$(MAKE) -C HIBABLZERO
 
 clean:

@@ -24,18 +24,11 @@ enum chip_type
 };
 
 
-int serial_backspace8250(struct serial_interface* chip);
-int serial_get_chip(struct serial_port* port, const struct serial_chip** detected_chip_version);
-void serial_set_dl(struct serial_port* port, u16 value);
-u16 serial_get_dl(struct serial_port* port);
+void serial_get_chip(struct serial_port* port, const struct serial_chip** detected_chip_version);
 int serial_chip_test(struct serial_port* port);
-bool can_serial_recv(struct serial_port* port);
-int serial_recv8250(struct serial_interface* chip, u8* data);
-bool can_serial_send(struct serial_port* port);
-int serial_send8250(struct serial_interface* chip, u8 data);
-int serial_newline8250(struct serial_interface* chip);
-void serial_async_backspace(struct serial_interface* chip);
-void serial_async_newline(struct serial_interface* chip);
-void serial_async_recv(struct serial_interface* chip, u8* data);
-void serial_async_send(struct serial_interface* chip, u8 data);
+void serial_newline(struct serial_interface* chip);
+void serial_backspace(struct serial_interface* chip);
+int serial_send_fifo_batched(struct serial_port* port, u8* data, u32 length);
+int serial_send_nf_batched(struct serial_port* port, u8* data, u32 length);
+void serial_recv(struct serial_port* port, u8* data);
 #endif

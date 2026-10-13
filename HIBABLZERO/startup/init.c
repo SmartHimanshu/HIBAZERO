@@ -24,7 +24,7 @@ void NORETURN kern_startup(void)
     while(true)
     {
         char c;
-        interface.readc(&interface, (u8*)&c);
-        interface.putc(&interface, c);
+        interface.readc(interface.port, (u8*)&c);
+        interface.puts(interface.port, (u8*)&c, 1);
     }
 };
