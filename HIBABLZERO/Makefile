@@ -4,7 +4,7 @@ LD := i686-elf-ld
 STARTUPASFLAGS := -g -Iinclude
 ASFLAGS := $(STARTUPASFLAGS) -Wa,--divide -ffreestanding -nostdlib -nostdinc -Wall -Wextra
 CFLAGS := $(ASFLAGS)
-OBJS := bin/startup_boot.S.o bin/init.c.o bin/serial_uart_chip.c.o
+OBJS := bin/startup_boot.S.o bin/init.c.o bin/serial_uart_chip.c.o bin/vga_text_bios.c.o bin/vga_text_main.c.o bin/vga_text_config.c.o
 
 all: build/disk.img
 
@@ -24,6 +24,15 @@ bin/startup_boot.S.o: startup/startup_boot.S
 	$(CC) $(ASFLAGS) -o $@ -c $<
 
 bin/init.c.o: startup/init.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+bin/vga_text_bios.c.o: drivers/vga_text/bios.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+bin/vga_text_main.c.o: drivers/vga_text/main.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+bin/vga_text_config.c.o: drivers/vga_text/config.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 bin/serial_uart_chip.c.o: drivers/serial/uart_chip.c

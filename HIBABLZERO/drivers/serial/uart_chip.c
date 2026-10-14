@@ -11,6 +11,7 @@ published by the Free Software Foundation.
 #include <hb0/io/serial_io.h>
 #include <hb0/err.h>
 
+#include "hb0/types.h"
 #include "uart.h"
 
 #define ARBRITRARY_VALUE 0x81
@@ -65,7 +66,7 @@ static inline void serial_set_dl(struct serial_port* port, u16 value)
 
 // Get serial divisor latch
 
-static inline u16 serial_get_dl(struct serial_port* port)
+static inline u16 UNUSED serial_get_dl(struct serial_port* port)
 {
     u8 DLL = serial_in(port->iobase, 0);
     u8 DLH = serial_in(port->iobase, 1);

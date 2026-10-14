@@ -23,14 +23,14 @@ published by the Free Software Foundation.
 
 struct serial_chip
 {
-    const char* chip_name;
-    bool fifo_supported;
-    u8 fifo_size;
+    const char*     chip_name;
+    bool            fifo_supported;
+    u8              fifo_size;
 };
 
 struct serial_port
 {
-    u32 iobase;
+    u32             iobase;
 };
 
 struct serial_interface
