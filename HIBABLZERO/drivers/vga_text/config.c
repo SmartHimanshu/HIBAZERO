@@ -7,6 +7,7 @@ it under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.
 */
 
+#include "hb0/types.h"
 #include "main.h"
 
 /*
@@ -16,45 +17,53 @@ have 40 columns. However, with real world firmware, variations and buggy BIOSes
 can exist. Therefore, we are going to take BVM config as strictly as a reference.
 */
 
-const struct bios_video_mode_conf_t BVM_config[] = 
+const struct bios_video_mode_conf_t bvm_config[] = 
 {
     [T_GREY_SMALL] = 
     {
-        .bios_num=0x00,
-        .text_rows=25,
-        .text_cols=40,
-        .monochrome=false    
+        .bios_num = 0x00,
+        .text_rows = 25,
+        .text_cols = 40,
+        .monochrome = false,
+        .color = false
     },
 
     [T_COLOR_SMALL] = 
     {
-        .bios_num=0x00,
-        .text_rows=25,
-        .text_cols=40,
-        .monochrome=false    
-    },
-
-    [T_GREY_BIG] = 
-    {
-        .bios_num=0x00,
-        .text_rows=25,
-        .text_cols=80,
-        .monochrome=false    
-    },
-
-    [T_COLOR_BIG] = 
-    {
-        .bios_num=0x00,
-        .text_rows=25,
-        .text_cols=80,
-        .monochrome=false    
+        .bios_num = 0x01,
+        .text_rows = 25,
+        .text_cols = 40,
+        .monochrome = false,
+        .color = true
     },
 
     [T_MONOCHROME] = 
     {
-        .bios_num=0x00,
-        .text_rows=25,
-        .text_cols=80,
-        .monochrome=true    
+        .bios_num = 0x07,
+        .text_rows = 25,
+        .text_cols = 80,
+        .monochrome = true,
+        .color = false
     },
+
+    [T_GREY_BIG] = 
+    {
+        .bios_num = 0x02,
+        .text_rows = 25,
+        .text_cols = 80,
+        .monochrome = false,
+        .color = false
+    },
+
+    [T_COLOR_BIG] = 
+    {
+        .bios_num = 0x03,
+        .text_rows = 25,
+        .text_cols = 80,
+        .monochrome = false,
+        .color = true 
+    },
+
 };
+
+u8 bvm_config_size = SIZEOF(bvm_config);

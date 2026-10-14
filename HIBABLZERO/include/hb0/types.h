@@ -27,8 +27,8 @@ typedef u64 size_t;
 #define NULL ((void*)0)
 
 #define NORETURN __attribute__((noreturn))
-
 #define PACKED __attribute__((packed))
 #define UNUSED __attribute__((unused))
 
+#define SIZEOF(arr) (sizeof(arr) / sizeof(arr[0]))
 #endif
