@@ -42,6 +42,30 @@ typedef struct vga_text_console_t
     void (*restore)(void);
 } vga_text_console;
 
+// VGA Text color mode helpers.
+
+#define VGA_TEXT_COLOR_BLACK            0x0
+#define VGA_TEXT_COLOR_BLUE             0x1
+#define VGA_TEXT_COLOR_GREEN            0x2
+#define VGA_TEXT_COLOR_CYAN             0x3
+#define VGA_TEXT_COLOR_RED              0x4
+#define VGA_TEXT_COLOR_MAGNETA          0x5
+#define VGA_TEXT_COLOR_BROWN            0x6
+#define VGA_TEXT_COLOR_LIGHT_GRAY       0x7
+#define VGA_TEXT_COLOR_DARK_GRAY        0x8
+#define VGA_TEXT_COLOR_LIGHT_BLUE       0x9
+#define VGA_TEXT_COLOR_LIGHT_GREEN      0xA
+#define VGA_TEXT_COLOR_LIGHT_CYAN       0xB
+#define VGA_TEXT_COLOR_LIGHT_RED        0xC
+#define VGA_TEXT_COLOR_LIGHT_MAGNETA    0xD
+#define VGA_TEXT_COLOR_YELLOW           0xE
+#define VGA_TEXT_COLOR_WHITE            0xF
+
+static inline u8 vga_make_color(u8 background_color, u8 text_color)
+{
+    return ((u16)background_color<<8)|(u16)text_color;
+};
+
 int vga_text_init(vga_text_console* handle);
 
 
