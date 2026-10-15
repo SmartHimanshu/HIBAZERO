@@ -7,8 +7,8 @@ it under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.
 */
 
-#ifndef DRIVER_INTERNAL_SERIAL_INTERNAL_H
-#define DRIVER_INTERNAL_SERIAL_INTERNAL_H
+#ifndef LOCAL_SERIAL_H
+#define LOCAL_SERIAL_H
 
 #include <hb0/types.h>
 #include <drivers/serial.h>

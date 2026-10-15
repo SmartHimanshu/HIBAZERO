@@ -78,7 +78,7 @@ Chooses the best vga mode. The order of the modes is in main.h
 int iterate_vga_modes(u8* bvm, u8* char_cols)
 {
     if ((bvm==NULL)||(char_cols==NULL)) return -ERRINV;
-    for(s8 i = bvm_config_size; i >= 0; i--)
+    for(s16 i = bvm_config_size-1; i > 0; i--)
     {
         u8 _char_cols;
         

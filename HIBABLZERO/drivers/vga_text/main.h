@@ -7,30 +7,30 @@ it under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.
 */
 
+#ifndef LOCAL_VGA_TEXT
+#define LOCAL_VGA_TEXT
+
+
 #include <hb0/types.h>
-
-
+#include <drivers/vga_text.h>
+#include <hb0/libc.h>
 
 
 // bios.c
 int iterate_vga_modes(u8* bvm, u8* char_cols);
 
 // config.c
+extern const struct bios_video_mode_conf_t bvm_config[];    // Share the configuration locally
+extern u8 bvm_config_size;  // Configuration size
 
-struct bios_video_mode_conf_t
+// Simple helper function to load bvm configuration.
+
+static inline void load_config(const struct bios_video_mode_conf_t* source, struct bios_video_mode_conf_t* destination)
 {
-    u8      bios_num;       // BIOS video mode number
-
-    u8      text_rows;      // Text mode number of rows
-    u8      text_cols;      // Text mode number of cols
-    
-    bool    monochrome;     // Is the mode monochrome
-    bool    color;          // Does the BVM support color graphics
-
-};
+    memcpy((void*)source, (void*)destination, sizeof(struct bios_video_mode_conf_t));
+}
 
 // The following is the order of the bvm from worst to best:
-
 enum bios_video_mode_num
 {
     T_GREY_SMALL = 0,
@@ -40,22 +40,9 @@ enum bios_video_mode_num
     T_COLOR_BIG,
 };
 
-extern const struct bios_video_mode_conf_t bvm_config[];    // Share the configuration locally
-extern u8 bvm_config_size;  // Configuration size
+void vga_puts(vga_text_console* handle, u8* s, u8 color);
+void vga_backspace(vga_text_console* handle);
+void vga_newline(vga_text_console* handle);
+int vga_text_init(vga_text_console* handle);
 
-// main.c
-
-typedef struct vga_text_console_t
-{
-    volatile u16* _console_addr;
-    struct bios_video_mode_conf_t _local_config;
-    
-    u8 _cursor_x;
-    u8 _cursor_y;
-
-    
-
-    void (*puts)(u8* s);
-    void (*newline)(struct vga_text_console_t);
-    void (*backspace)(struct vga_text_console_t);
-} vga_text_console;
+#endif

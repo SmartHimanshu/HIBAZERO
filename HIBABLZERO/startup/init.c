@@ -11,16 +11,22 @@ published by the Free Software Foundation.
 #include <hb0/types.h>
 #include <drivers/serial.h>
 #include <machine/int.h>
-
+#include <drivers/vga_text.h>
 
 void NORETURN kern_startup(void)
 {    
     struct serial_port port = {PORT_COM1};
     struct serial_interface interface = {0};
     interface.port = &port;
-    
+    struct vga_text_console_t vga_controller;
+
     serial_interface_init(&interface, 1, PORT_COM1);
 
+
+
+    vga_text_init(&vga_controller);
+
+    vga_controller.puts(&vga_controller, (u8*)"Hello, World!", 0b00001111);    
     while(true)
     {
         char c;
