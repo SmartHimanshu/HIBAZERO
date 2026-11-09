@@ -158,7 +158,76 @@ a20_enable_bios:
 
 /*
  * A20 enable using keyboard controller
- * 
+ * NOTE: The result of failure or not is not reliable in case of success
  */
 a20_enable_keyboard:
-        
+        /*
+         * This section of code attempts to enable A20.
+         * Disable interrupts and keybaord from start for
+         * no interference.
+         */
+
+        cli                                             // Make sure we are good with inerrupts.
+
+        call .a20_enable_keyboard_wait_input_buffer     // Disable keyboard
+        movb $0xAD, %al
+        outb %al, $0x64
+
+        call .a20_enable_keyboard_wait_input_buffer     // Read controller output port
+        movb $0xD0, %al
+        outb %al, $0x64
+
+        call .a20_enable_keyboard_wait_response_byte    // Save response byte
+        inb $0x60, %al
+        pushw %ax
+
+        call .a20_enable_keyboard_wait_input_buffer     // Write next byte to controller
+        movb $0xD1, %al
+        outb %al, $0x64
+
+        call .a20_enable_keyboard_wait_input_buffer     // Set controller output bit for A20
+        popw %ax
+        orb $2, %al
+        outb %al, $0x60
+
+        /*
+         * This section of code tests whether A20 is enabled
+         * using the keyboard controller itself. Ofc this is
+         * not enough and the true A20 check needs to be done properly.
+         */
+        call .a20_enable_keyboard_wait_input_buffer     // Read controller output port 
+        movb $0xD0, %al
+        outb %al, $0x64
+
+        call .a20_enable_keyboard_wait_response_byte    // Get A20 state
+        inb $0x60, %al
+        testb $2, %al
+        jz .a20_enable_keyboard_fail                    // Go to failure case if A20 not enabled.
+
+        call .a20_enable_keyboard_wait_input_buffer     // Reactivate keyboard
+        movb $0xAE, %al
+        outb %al, $0x64
+
+        call .a20_enable_keyboard_wait_input_buffer 
+        ret
+
+.a20_enable_keyboard_wait_input_buffer:
+        inb $0x64, %al
+        testb $2, %al
+        jnz .a20_enable_keyboard_wait_input_buffer
+        ret
+
+.a20_enable_keyboard_wait_response_byte:
+        inb $0x64, %al
+        testb $1, %al
+        jz .a20_enable_keyboard_wait_response_byte
+        ret
+
+.a20_enable_keyboard_fail:
+        call .a20_enable_keyboard_wait_input_buffer     // Reactivate keyboard
+        movb $0xAE, %al
+        outb %al, $0x64
+
+        call .a20_enable_keyboard_wait_input_buffer     // Reactivate interrupts
+        ret
+
