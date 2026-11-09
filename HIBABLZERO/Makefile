@@ -20,7 +20,7 @@ build/diskboot.bin: boot/diskboot.S
 	$(CC) $(ASFLAGS) -m32 -Tscript/diskbootlinker.ld -o $@ $<
 	$(CC) $(ASFLAGS) -m32 -Tscript/bootlinkerelf.ld -o build/diskboot.o -c $<
 
-bin/startup_boot.S.o: startup/startup_boot.S
+bin/startup_boot.S.o: startup/asm/startup_boot.S
 	$(CC) $(ASFLAGS) -o $@ -c $<
 
 bin/init.c.o: startup/init.c
