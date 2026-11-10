@@ -12,9 +12,9 @@ published by the Free Software Foundation.
 .file "a20.S"
 
 /*
- *	Function: test A20 line.
- *	Destroys: ax
- *	Returns: 0 for ax disabled and 1 for ax enabled.
+ * Function: test A20 line.
+ * Destroys: ax
+ * Returns: 0 for ax disabled and 1 for ax enabled.
  */
 
 .global a20_test
@@ -48,8 +48,8 @@ a20_test:
 	movw $0x0000, %ax
 
 	/*
-	 *	We check for change in the value at 0x7B00.
-	 *	If it is 0x0000, we failed and the written value looped back.
+	 * We check for change in the value at 0x7B00.
+	 * If it is 0x0000, we failed and the written value looped back.
 	 */
 	je .a20_exit
 
@@ -212,15 +212,25 @@ a20_enable_keyboard:
         ret
 
 .a20_enable_keyboard_wait_input_buffer:
+        movw $65535, %cx
+1:
         inb $0x64, %al
         testb $2, %al
-        jnz .a20_enable_keyboard_wait_input_buffer
+        loop .a20_enable_keyboard_wait_input_buffer
+
+        testw %cx, %cx
+        jnz .a20_enable_keyboard_hard_fail
         ret
 
 .a20_enable_keyboard_wait_response_byte:
+        movw $65535, %cx
+1:
         inb $0x64, %al
         testb $1, %al
-        jz .a20_enable_keyboard_wait_response_byte
+        loop .a20_enable_keyboard_wait_response_byte
+
+        testw %cx, %cx
+        jnz .a20_enable_keyboard_hard_fail
         ret
 
 .a20_enable_keyboard_fail:
@@ -231,3 +241,19 @@ a20_enable_keyboard:
         call .a20_enable_keyboard_wait_input_buffer     // Reactivate interrupts
         ret
 
+/* 
+ * The main function responsible for enabling a20 line for us.
+ * Uses all of the a20 implementations shown so far.
+ * This implementation is inspired by the OSdev wiki recommended
+ * implementation: https://wiki.osdev.org/A20_Line?utm_source=chatgpt.com#Recommended_Method
+ */
+a20_enable_main:
+        call a20_test                                   // If A20 is enabled, simply do nothing.
+        testw %ax, %ax
+        jnz .a20_enable_main_exit
+
+        // A20 not enabled here. So proceed with BIOS method.
+
+        call a20_enable_bios
+.a20_enable_main_exit:
+        ret
