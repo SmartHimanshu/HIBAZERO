@@ -15,7 +15,7 @@ published by the Free Software Foundation.
 
 .globl _start
 _start:
-    //These are generally thrashed by bios so we have to restore them.
+    // These are generally thrashed by bios so we have to restore them.
 
     cli
 
@@ -36,20 +36,20 @@ _start:
     call print
 
     /*
-    Since some BIOSes return dl with some bogus value. We are taking into account
-    that this bootloader is modern, and in a sense, never gonna be loaded by a floppy.
-    Floppies start wtih 0x00 to 0x7F and hard disks start with 0x80 to 0xFF.
-    Because of this, we shall check if we are on a hard disk and rely fully on which hard disk
-    diskboot.S is stored on.
-    */
+     * Since some BIOSes return dl with some bogus value. We are taking into account
+     * that this bootloader is modern, and in a sense, never gonna be loaded by a floppy.
+     * Floppies start wtih 0x00 to 0x7F and hard disks start with 0x80 to 0xFF.
+     * Because of this, we shall check if we are on a hard disk and rely fully on which hard disk
+     * diskboot.S is stored on.
+     */
 
-    movb diskboot_disk_num, %dh //Checks whether bootloader installer provided a valid disk
+    movb diskboot_disk_num, %dh                 // Checks whether bootloader installer provided a valid disk
     cmpb $0xFF, %dh
     je 1f
 
-    movb %dh, %dl // Did find a suitable disk by the installer
+    movb %dh, %dl                               // Did find a suitable disk by the installer
 1:
-    cmpb $0x80, %dl // We check if we are on hard disk or not. If not, take 0x80.
+    cmpb $0x80, %dl                             // We check if we are on hard disk or not. If not, take 0x80.
     jnb 1f
 
     movb $0x80, %dl
