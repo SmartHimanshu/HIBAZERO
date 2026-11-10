@@ -27,3 +27,4 @@ die:
 #include "modeswitch.S"
 
 #include "int.S"
+#include "a20.S"

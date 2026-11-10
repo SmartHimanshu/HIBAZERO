@@ -43,7 +43,7 @@ a20_test:
 	movw $0x0000, %es:(%di)
 
 	movw %ds:(%si), %ax
-	cmpw %ax, $0x0000	/* Check for change */
+	cmpw $0x0000, %ax /* Check for change */
 
 	movw $0x0000, %ax
 
