@@ -55,7 +55,7 @@ a20_test:
 
 	movw $0x0001, %ax	/* A20 is enabled. */
 
-.a20_exit:
+.a20_test_exit:
 	popw %di
 	popw %si
 	popw %es
@@ -65,6 +65,24 @@ a20_test:
 
 	ret
 
+a20_test_looped:
+        pushw %cx
+        movw $65535, %cx
+
+.a20_test_looped_loop:
+        call a20_test
+        testw %ax, %ax
+        jnz .a20_test_looped_done
+        loop .a20_test_looped_loop
+
+.a20_test_looped_done:
+        xorw %ax, %ax
+        testw %cx, %cx
+        jz .a20_test_looped_done_over
+
+.a20_test_looped_done_over:
+        popw %cx
+        ret
 /* A20 Enable FAST: Destroys AL. There's no confirmed check for it so no check here */
 a20_enable_fast:
 	inb $0x92, %al
@@ -250,10 +268,34 @@ a20_enable_keyboard:
 a20_enable_main:
         call a20_test                                   // If A20 is enabled, simply do nothing.
         testw %ax, %ax
-        jnz .a20_enable_main_exit
+        jnz .a20_enable_main_exit_success
 
         // A20 not enabled here. So proceed with BIOS method.
 
         call a20_enable_bios
-.a20_enable_main_exit:
+        call a20_test
+        testw %ax, %ax
+        jnz .a20_enable_main_exit_success               // Since BIOS resutl is bogus, use normal.
+
+        // Now proceed with keyboard controller method.
+
+        call a20_enable_keyboard
+        call a20_test_looped
+        testw %ax, %ax
+        jnz .a20_enable_main_exit_success               // Since keyboard not reliable.
+
+        // If not even the keyboard is working, we try our last method: fast a20.
+
+        call a20_enable_fast
+        call a20_test_looped
+        testw %ax, %ax
+        jnz .a20_enable_main_exit_success               // No test for A20 on its own anyway.
+
+
+        
+.a20_enable_main_exit_failure:
+        xorw %ax, %ax
+        ret
+.a20_enable_main_exit_success:
+        movw $1, %ax
         ret
