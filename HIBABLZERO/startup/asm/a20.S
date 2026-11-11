@@ -51,7 +51,7 @@ a20_test:
 	 * We check for change in the value at 0x7B00.
 	 * If it is 0x0000, we failed and the written value looped back.
 	 */
-	je .a20_exit
+	je .a20_test_exit
 
 	movw $0x0001, %ax	/* A20 is enabled. */
 
@@ -237,7 +237,7 @@ a20_enable_keyboard:
         loop .a20_enable_keyboard_wait_input_buffer
 
         testw %cx, %cx
-        jnz .a20_enable_keyboard_hard_fail
+        jnz .a20_enable_keyboard_fail
         ret
 
 .a20_enable_keyboard_wait_response_byte:
@@ -248,7 +248,7 @@ a20_enable_keyboard:
         loop .a20_enable_keyboard_wait_response_byte
 
         testw %cx, %cx
-        jnz .a20_enable_keyboard_hard_fail
+        jnz .a20_enable_keyboard_fail
         ret
 
 .a20_enable_keyboard_fail:
@@ -291,7 +291,7 @@ a20_enable_main:
         testw %ax, %ax
         jnz .a20_enable_main_exit_success               // No test for A20 on its own anyway.
 
-
+        // Since our last method has fallen, we give up and set ax as 0.
         
 .a20_enable_main_exit_failure:
         xorw %ax, %ax

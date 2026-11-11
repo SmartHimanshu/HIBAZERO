@@ -17,13 +17,21 @@ published by the Free Software Foundation.
 .section .startup, "ax"
 _start:
     cli // Just make sure we are good with the interrupts
+    call a20_enable_main // Enable A20 mode.
+
+    movb %al, a20_on
+
     calll real_to_prot
+
 .code32
     jmp kern_startup
 
 die:
     jmp die
 
+.global a20_on
+a20_on:
+        .byte 0
 #include "modeswitch.S"
 
 #include "int.S"

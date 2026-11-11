@@ -1,4 +1,4 @@
-/* 
+/*
 HIBAZERO
 Copyright (C) 2026 Himanshu Bakshi
 
@@ -14,5 +14,6 @@ published by the Free Software Foundation.
 
 void NORETURN kern_startup(void);
 
+extern u8 a20_on;
 
 #endif
